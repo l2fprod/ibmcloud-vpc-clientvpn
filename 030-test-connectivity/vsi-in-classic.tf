@@ -33,7 +33,7 @@ resource "ibm_compute_vm_instance" "vsi" {
 # https://cloud.ibm.com/docs/vpc?topic=vpc-vpn-client-to-site-overview#integrate-transit-vpn-gateway
 resource "ibm_is_vpn_server_route" "route_to_classic" {
   name = "${var.basename}-to-classic"
-  vpn_server = ibm_is_vpn_server.vpn.id
+  vpn_server = data.terraform_remote_state.infrastructure.outputs.vpn.id
   action = "translate"
   destination = ibm_compute_vm_instance.vsi.private_subnet
 }

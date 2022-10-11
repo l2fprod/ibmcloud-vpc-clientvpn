@@ -10,20 +10,10 @@ terraform {
 provider "ibm" {
   region           = var.region
   ibmcloud_api_key = var.ibmcloud_api_key
-  iaas_classic_username = var.iaas_classic_username
-  iaas_classic_api_key = var.iaas_classic_api_key
 }
 
 variable "ibmcloud_api_key" {
   description = "IBM Cloud API key to create resources"
-}
-
-variable "iaas_classic_username" {
-  description = "The IBM Cloud Classic Infrastructure (SoftLayer) user name"
-}
-
-variable "iaas_classic_api_key" {
-  description = "The IBM Cloud Classic Infrastructure API key"
 }
 
 variable "region" {
@@ -60,4 +50,8 @@ data "ibm_resource_group" "group" {
 
 locals {
   resource_group_id = var.existing_resource_group_name != "" ? data.ibm_resource_group.group.0.id : ibm_resource_group.group.0.id
+}
+
+output "resource_group_id" {
+  value = local.resource_group_id
 }

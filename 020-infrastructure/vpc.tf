@@ -122,3 +122,15 @@ resource "ibm_is_security_group_rule" "outbound_cse" {
   direction = "outbound"
   remote    = "166.9.0.0/16"
 }
+
+output "vpc" {
+  value = ibm_is_vpc.vpc
+}
+
+output "subnet" {
+  value = ibm_is_subnet.subnet
+}
+
+output "security_group" {
+  value = ibm_is_security_group.group
+}

@@ -92,3 +92,7 @@ ${data.terraform_remote_state.certificates.outputs.client_key}
 EOT
   filename = "../config/client-full.ovpn"
 }
+
+output "vpn" {
+  value = ibm_is_vpn_server.vpn
+}
