@@ -1,0 +1,12 @@
+local.env
+
+# terraform
+*.tfstate*
+*.terraform*
+secrets.json
+
+# vpn config
+config
+
+.DS_Store
+.$*
