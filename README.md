@@ -57,12 +57,13 @@ In addition, to test the connectivity with VSI and Classic Infrastructure, you w
    ```sh
    (cd 020-infrastructure && ./main.sh apply)
    ```
-1. At that stage, you can already establish an OpenVPN connection to validate the Client VPN creation. Use the OpenVPN user interface or command line with the generated configuration file [config/client-full.ovpn](./config/client-full.ovpn) that includes all required certificates and key.
+1. At that stage, you can already establish an OpenVPN connection to validate the Client VPN creation. Use the OpenVPN user interface or the command line (from your machine, not the Docker container above) with the generated configuration file [config/client-full.ovpn](./config/client-full.ovpn) that includes all required certificates and key.
    ```
    sudo openvpn --config config/client-full.ovpn
    ```
 
    You should see the message `Initialization Sequence Completed`. The output also includes information about the server configuration, the routes that were pushed to the client.
+1. Leave the VPN connection running
 
 ## Test connectivity
 
@@ -70,6 +71,7 @@ In addition, to test the connectivity with VSI and Classic Infrastructure, you w
    ```sh
    (cd 030-test-connectivity && ./main.sh apply)
    ```
+1. Ping or `ssh` to the VSIs that were created using the IP addresses shown at the end of the provisioning.
 
 ## Destroy all resources
 
@@ -84,4 +86,8 @@ In addition, to test the connectivity with VSI and Classic Infrastructure, you w
 | -------------- | ----------- |
 | [010-certificates](./010-certificates/) | Generates server and client certificates and stores them in Secrets Manager. |
 | [020-infrastructure](./020-infrastructure/) | Creates a VPC and a Client VPN for VPC instance. |
-| 030-test-connectivity |  |
+| [030-test-connectivity](./030-test-connectivity/) | Creates a VSI in VPC and in Classic to test the connectivity from your local machine. |
+
+## License
+
+See [LICENSE](./LICENSE).
