@@ -64,6 +64,11 @@ In addition, to test the connectivity with VSI and Classic Infrastructure, you w
 
    You should see the message `Initialization Sequence Completed`. The output also includes information about the server configuration, the routes that were pushed to the client.
 1. Leave the VPN connection running
+1. Test the connectivity to private endpoints:
+   ```sh
+   ping s3.direct.us.cloud-object-storage.appdomain.cloud
+   ping api.private.us-south.speech-to-text.watson.cloud.ibm.com
+   ```
 
 ## Test connectivity
 
