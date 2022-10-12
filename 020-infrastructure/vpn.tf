@@ -73,13 +73,32 @@ resource "ibm_is_security_group_rule" "vpn_cse_outbound" {
   remote    = "166.9.0.0/16"
 }
 
+resource "ibm_is_vpn_server_route" "route_cse_to_vpc" {
+  vpn_server  = ibm_is_vpn_server.vpn.id
+  action      = "deliver"
+  destination = "166.9.0.0/16"
+}
+
+# allow clients to reach private backend
+resource "ibm_is_security_group_rule" "vpn_private_outbound" {
+  group     = ibm_is_security_group.vpn.id
+  direction = "outbound"
+  remote    = "161.26.0.0/16"
+}
+
+resource "ibm_is_vpn_server_route" "route_private_to_vpc" {
+  vpn_server  = ibm_is_vpn_server.vpn.id
+  action      = "deliver"
+  destination = "161.26.0.0/16"
+}
+
 data "ibm_is_vpn_server_client_configuration" "config" {
   vpn_server = ibm_is_vpn_server.vpn.id
   file_path  = "../config/client.ovpn"
 }
 
 resource "local_file" "fullconfig" {
-  content=<<EOT
+  content  = <<EOT
 ${data.ibm_is_vpn_server_client_configuration.config.vpn_server_client_configuration}
 
 <cert>

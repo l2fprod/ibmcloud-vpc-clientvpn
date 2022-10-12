@@ -123,6 +123,12 @@ resource "ibm_is_security_group_rule" "outbound_cse" {
   remote    = "166.9.0.0/16"
 }
 
+resource "ibm_is_security_group_rule" "outbound_private" {
+  group     = ibm_is_security_group.group.id
+  direction = "outbound"
+  remote    = "161.26.0.0/16"
+}
+
 output "vpc" {
   value = ibm_is_vpc.vpc
 }
