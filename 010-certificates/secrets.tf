@@ -2,11 +2,7 @@ terraform {
   required_providers {
     ibm = {
       source  = "IBM-Cloud/ibm"
-      version = ">= 1.45"
-    }
-    restapi = {
-      source  = "Mastercard/restapi"
-      version = ">= 1.17"
+      version = ">= 1.51"
     }
   }
 }
@@ -32,97 +28,29 @@ variable "existing_secrets_manager_id" {
 data "ibm_iam_auth_token" "tokendata" {}
 data "ibm_iam_account_settings" "iam_account_settings" {}
 
-provider "restapi" {
-  uri                  = "https://${var.existing_secrets_manager_id}.${var.region}.secrets-manager.appdomain.cloud"
-  debug                = true
-  write_returns_object = true
-  headers = {
-    Authorization = data.ibm_iam_auth_token.tokendata.iam_access_token
-  }
+resource "ibm_sm_secret_group" "secret_group" {
+  instance_id = var.existing_secrets_manager_id
+  name        = "${var.basename}-group"
+  description = "Created by terraform as part of the client VPN example."
 }
 
-resource "null_resource" "resource_change" {
-  triggers = {
-    a_change = jsonencode(module.pki)
-  }
+resource "ibm_sm_imported_certificate" "server_cert" {
+  instance_id     = var.existing_secrets_manager_id
+  name            = "${var.basename}-server-cert"
+  description     = "Server certificate created by terraform as part of the client VPN example."
+  secret_group_id = ibm_sm_secret_group.secret_group.secret_group_id
+  certificate     = module.pki.certificates["server"].cert.cert_pem
+  private_key     = module.pki.certificates["server"].private_key.private_key_pem
+  intermediate    = module.pki.ca.cert.cert_pem
 }
 
-resource "restapi_object" "secret_group" {
-  path = "/api/v1/secret_groups"
-
-  data = jsonencode({
-    metadata = {
-      collection_type  = "application/vnd.ibm.secrets-manager.secret.group+json"
-      collection_total = 1
-    }
-    resources = [
-      {
-        name        = "${var.basename}-group"
-        description = "Created by terraform as part of the client VPN example."
-      }
-    ]
-  })
-  id_attribute = "resources/0/id"
-  debug        = true
-}
-
-resource "restapi_object" "server_cert" {
-  path = "/api/v1/secrets/imported_cert"
-
-  data = jsonencode({
-    metadata = {
-      collection_type  = "application/vnd.ibm.secrets-manager.secret+json"
-      collection_total = 1
-    }
-    resources = [
-      {
-        name            = "${var.basename}-server-cert"
-        description     = "Server certificate created by terraform as part of the client VPN example."
-        secret_group_id = restapi_object.secret_group.id
-        certificate     = module.pki.certificates["server"].cert.cert_pem
-        private_key     = module.pki.certificates["server"].private_key.private_key_pem
-        intermediate    = module.pki.ca.cert.cert_pem
-      }
-    ]
-  })
-  id_attribute = "resources/0/id"
-  debug        = true
-
-  # force secrets to be recreate if anything changes in the certificates
-  lifecycle {
-    replace_triggered_by = [
-      null_resource.resource_change.triggers
-    ]
-  }
-}
-
-resource "restapi_object" "client_cert" {
-  path = "/api/v1/secrets/imported_cert"
-
-  data = jsonencode({
-    metadata = {
-      collection_type  = "application/vnd.ibm.secrets-manager.secret+json"
-      collection_total = 1
-    }
-    resources = [
-      {
-        name            = "${var.basename}-client-cert"
-        description     = "Client certificate created by terraform as part of the client VPN example."
-        secret_group_id = restapi_object.secret_group.id
-        certificate     = module.pki.certificates["client"].cert.cert_pem
-        intermediate    = module.pki.ca.cert.cert_pem
-      }
-    ]
-  })
-  id_attribute = "resources/0/id"
-  debug        = true
-
-  # force secrets to be recreate if anything changes in the certificates
-  lifecycle {
-    replace_triggered_by = [
-      null_resource.resource_change.triggers
-    ]
-  }
+resource "ibm_sm_imported_certificate" "client_cert" {
+  instance_id     = var.existing_secrets_manager_id
+  name            = "${var.basename}-client-cert"
+  description     = "Client certificate created by terraform as part of the client VPN example."
+  secret_group_id = ibm_sm_secret_group.secret_group.secret_group_id
+  certificate     = module.pki.certificates["client"].cert.cert_pem
+  intermediate    = module.pki.ca.cert.cert_pem
 }
 
 resource "ibm_iam_authorization_policy" "secret_group_to_vpn" {
@@ -160,16 +88,16 @@ resource "ibm_iam_authorization_policy" "secret_group_to_vpn" {
 
   resource_attributes {
     name  = "resource"
-    value = restapi_object.secret_group.id
+    value = local.secret_group_id
   }
 }
 
 output "server_cert_crn" {
-  value = jsondecode(restapi_object.server_cert.api_response).resources.0.crn
+  value = ibm_sm_imported_certificate.server_cert.crn
 }
 
 output "client_cert_crn" {
-  value = jsondecode(restapi_object.client_cert.api_response).resources.0.crn
+  value = ibm_sm_imported_certificate.client_cert.crn
 }
 
 output "client_cert" {

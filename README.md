@@ -28,10 +28,12 @@ In addition, to test the connectivity with VSI and Classic Infrastructure, you w
 1. Use the [following Docker image](https://github.com/l2fprod/ibmcloud-ci) to run the deployment scripts. It has all required tools preinstalled.
    * On Linux terminal:
       ```sh
+      docker pull l2fprod/ibmcloud-ci
       docker run -it --volume $PWD:/root/mnt/home --workdir /root/mnt/home l2fprod/ibmcloud-ci
       ```
    * On Windows command prompt:
       ```sh
+      docker pull l2fprod/ibmcloud-ci
       docker run -it --volume %CD%:/root/mnt/home --workdir /root/mnt/home l2fprod/ibmcloud-ci
       ```
    You can also try with your own environment. Prereqs are: tfswitch, terraform.
