@@ -88,7 +88,7 @@ resource "ibm_iam_authorization_policy" "secret_group_to_vpn" {
 
   resource_attributes {
     name  = "resource"
-    value = local.secret_group_id
+    value = ibm_sm_secret_group.secret_group.secret_group_id
   }
 }
 
